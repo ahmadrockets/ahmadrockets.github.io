@@ -1,13 +1,12 @@
-<html>
-    <head>
-        <title>Ahmad Fahrudin</title>
-    </head>
-    <body>
-        <html>
-        <br>
-        <center>
-            <h2>Welcome to Ahmad Fahrudin Website</h2>
-            <h3>Web Developer</h3>
-        </center>
-    </body>
-</html>
+<script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+<div id="app">
+    {{ message }}
+</div>
+<script>
+    var app = new Vue({
+    el: '#app',
+    data: {
+            message: 'Hello Vue!'
+        }
+    })
+</script>
