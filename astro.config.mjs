@@ -15,6 +15,7 @@ import vercel from '@astrojs/vercel/serverless'
 export default defineConfig({
 	site: 'https://ahmadrockets.github.io',
 	base: 'ahmadrockets',
+	outDir: 'dist',
 	integrations: [
 		expressiveCode(expressiveCodeOptions),
 		tailwind({
