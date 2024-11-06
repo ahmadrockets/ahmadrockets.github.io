@@ -102,9 +102,30 @@ ini dari function main...
 ```
 Output pertama dan kedua berbeda urutan tergantung goroutine mana yang lebih dulu di eksekusi. Hal ini dikarenakan, pengiriman data adalah dari 2 goroutine yang berbeda, yang kita tidak tau mana yang prosesnya selesai lebih dulu. Goroutine yang dieksekusi lebih awal belum tentu selesai lebih awal, yang jelas proses yang selesai lebih awal datanya akan diterima lebih awal.
 
+## Blocking Channels
+Pengiriman dan penerimaan data pada channel bersifat `blocking` atau synchronous. Artinya, statement di-bawah syntax pengiriman dan penerimaan data via channel hanya akan dieksekusi setelah proses serah terima berlangsung dan selesai.
+```go
+package main
+
+import "fmt"
+
+func main(){
+  c := make(chan bool)
+  c <- true
+
+  fmt.Println("baris kode ini tidak akan pernah dieksekusi")
+}
+```
+Contoh kode diatas jika dijalankan maka baris kode terakhir tidak akan pernah di eksekusi, akan terjadi prose deadlock dan program akan excited karena tidak ada proses penerimaan channel dari proses diatas.
+
 ## Buffered Channels
-## Select
+Buffered channel sama seperti channel biasa, tetapi buffered channel memiliki size.
+
+## Channel Select
+## Channel Range & Close
+## Channel Timeout
 ## WaitGroup
+## Penerapan Goroutine
 
 
 ## Referensi Tulisan
