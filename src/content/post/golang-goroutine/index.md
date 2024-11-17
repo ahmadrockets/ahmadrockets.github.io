@@ -109,17 +109,37 @@ package main
 
 import "fmt"
 
-func main(){
-  c := make(chan bool)
-  c <- true
+func main() {
+	ch := make(chan int) // Unbuffered channel
 
-  fmt.Println("baris kode ini tidak akan pernah dieksekusi")
+	fmt.Println("Mengirim data ke channel...")
+	ch <- 42                     // Terblokir karena tidak ada penerima
+	fmt.Println("Data terkirim") // Tidak akan dieksekusi
 }
+
 ```
-Contoh kode diatas jika dijalankan maka baris kode terakhir tidak akan pernah di eksekusi, akan terjadi prose deadlock dan program akan excited karena tidak ada proses penerimaan channel dari proses diatas.
+Contoh kode diatas jika dijalankan maka baris kode terakhir tidak akan pernah di eksekusi, akan terjadi proses deadlock dan program akan excited ```fatal error: all goroutines are asleep - deadlock!``` karena tidak ada proses penerimaan channel dari proses diatas.
+
 
 ## Buffered Channels
-Buffered channel sama seperti channel biasa, tetapi buffered channel memiliki size.
+Secara default channel bersifat *unbufferd*. buffered channel sama seperti channel biasa, tetapi buffered channel memiliki kapasitas penyimpanan data. Selama jumlah data yang dikirim tidak melebihi jumlah buffer, maka pengiriman akan berjalan ***asynchronous*** (tidak blocking). Untuk membuat buffered channel kita bisa menggunakan fungsi ```make(chan string, 2)```, artinya channel dibuat dengan kapasitas 2. <br />
+Kelabihan dari buffered channel antara lain bisa mengurangi blocking pada goroutine, selain itu data bisa ditampung sementara tanpa menunggu goroutine penerima. Untuk kekurangan dari buffered channel adalah jika channel penuh, goroutine akan diblock sampai ada tempat kosong.
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ch := make(chan int, 2)
+	ch <- 1
+	ch <- 2
+	fmt.Println(<-ch)
+	fmt.Println(<-ch)
+}
+```
+Kode diatas artinya kita membuat channel dengan kapasitas 2 buf. 
+
 
 ## Channel Select
 ## Channel Range & Close
