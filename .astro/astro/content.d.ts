@@ -151,6 +151,13 @@ declare module 'astro:content' {
 
 	type ContentEntryMap = {
 		"post": {
+"config-nginx-ssl/index.md": {
+	id: "config-nginx-ssl/index.md";
+  slug: "config-nginx-ssl";
+  body: string;
+  collection: "post";
+  data: InferEntrySchema<"post">
+} & { render(): Render[".md"] };
 "golang-goroutine/index.md": {
 	id: "golang-goroutine/index.md";
   slug: "golang-goroutine";
