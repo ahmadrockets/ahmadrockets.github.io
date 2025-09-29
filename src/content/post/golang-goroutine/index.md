@@ -138,7 +138,139 @@ func main() {
 	fmt.Println(<-ch)
 }
 ```
-Kode diatas artinya kita membuat channel dengan kapasitas 2 buf. 
+Kode diatas artinya kita membuat channel dengan kapasitas 2 buffers. Jika dijalankan akan menampilkan.
+```bash
+fahrudin@belajar-goroutine $ go run buffered_channel/buffered_channel.go 
+1
+2
+```
+
+Berikut ini contoh code channel lainnya.
+```go
+package main
+
+import "fmt"
+
+func main() {
+	ch2 := make(chan int, 2)
+	ch2 <- 1
+	ch2 <- 2
+	ch2 <- 3
+	fmt.Println(<-ch2)
+	fmt.Println(<-ch2)
+	fmt.Println(<-ch2)
+}
+```
+
+Jika dijalankan maka akan terjadi error deadlock karena kapasitas channel yang didefinisikan adalah 2 buffers, tetapi ada 3 kali value dikirimkan ke channel tersebut.
+```bash
+fahrudin@belajar-goroutine $ go run buffered_channel/buffered_channel.go
+fatal error: all goroutines are asleep - deadlock!
+
+goroutine 1 [chan send]:
+main.main()
+        /golang-goroutine/buffered_channel/buffered_channel.go:9 +0x58
+exit status 2
+```
+
+## Channel Select
+`select` digunakan untuk menunggu dan menangani banyak opearasi pada `channel` secara bersamaan. Penggunaan / konsepnya sama seperti `switch` untuk seleksi kondisinya.
+Select akan menunggu sampai salah satu case select bisa dieksekusi. Jika lebih dari 1 channel siap, salah satunya dipilih acak. Jika ada default, maka blok default akan dijalankan jika tidak ada channel yang siap. 
+Berikut ini adalah contoh penerapannya:
+### a. menunggu dari banyak channel
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		ch1 <- "Message dari ch1"
+	}()
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		ch2 <- "Message dari ch2"
+	}()
+
+	for i := 0; i < 2; i++ {
+		select {
+		case msg := <-ch1:
+			fmt.Println("Dapat:", msg)
+		case msg := <-ch2:
+			fmt.Println("Dapat:", msg)
+		}
+	}
+}
+```
+Dari kode diatas terdapat `2 channel` dengan tipe string. Keduanya dijalankan dengan goroutine, kemudian terdapat loop 2x sesuai dengan jumlah channel. `Select` akan menunggu sampai salah satu channel punya data. Kalau 2 channel tersebut mendapatkan data secara `bersamaan` maka select akan memilih secara `acak` goroutine mana yang akan dijalankan terlebih dahulu.
+jika dijalankan maka akan menampilkan:
+```bash
+fahrudin@belajar-goroutine $ go run channel_select/channel_select.go
+Dapat: Message dari ch1
+Dapat: Message dari ch2
+fahrudin@belajar-goroutine $ go run channel_select/channel_select.go
+Dapat: Message dari ch2
+Dapat: Message dari ch1
+```
+ 
+### b. Menggunakan default
+Default digunakan agar select tidak blocking. Berikut ini contoh penerapannya
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go func() {
+		time.Sleep(1 * time.Second)
+		ch1 <- "Message dari ch1"
+	}()
+
+	for i := 0; i < 4; i++ {
+		select {
+		case msg := <-ch1:
+			fmt.Println("Dapat:", msg)
+		case msg := <-ch2:
+			fmt.Println("Dapat:", msg)
+		default:
+			fmt.Println("Menunggu pesan...")
+			time.Sleep(500 * time.Millisecond)
+		}
+	}
+}
+
+```
+Dari kode diatas jika tidak ada channel yang siap `default` dijalankan sehingga tidak terjadi blocking channel. Jika kode dijalankan outputnya adalah:
+```bash
+fahrudin@belajar-goroutine $ go run channel_select/channel_select.go
+Menunggu pesan...
+Menunggu pesan...
+Dapat: Message dari ch1
+Menunggu pesan...
+```
+
+### c. Timeout dengan select + time.After
+### d. Infinite loop dengan goroutine
+
+## Channel Range & Close
+## Channel Timeout
+## WaitGroup
+## Penerapan Goroutine
+
 
 
 ## Channel Select
