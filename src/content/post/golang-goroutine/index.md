@@ -264,20 +264,143 @@ Menunggu pesan...
 ```
 
 ### c. Timeout dengan select + time.After
+Timeout digunakan untuk mengantisipasi proses yang dijalankan terlalu lama.
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch1 := make(chan string)
+	ch2 := make(chan string)
+
+	go func() {
+		time.Sleep(5 * time.Second) // simulasi proses berlangsung selama 5 detik
+		ch1 <- "Message dari ch1"
+	}()
+
+	go func() {
+		time.Sleep(5 * time.Second) // simulasi proses berlangsung selama 5 detik
+		ch2 <- "Message dari ch2"
+	}()
+
+	for i := 0; i < 2; i++ {
+		select {
+		case msg := <-ch1:
+			fmt.Println("Dapat:", msg)
+		case msg := <-ch2:
+			fmt.Println("Dapat:", msg)
+		case <-time.After(2 * time.Second):
+			fmt.Println("Timeout! tidak ada pesan masuk")
+		}
+	}
+}
+```
+Dari kode diatas maka tiap proses akan mendapatkan timeout karena batas timeout yang kita tentukan adalah 2 detik sedangkan kita mensimulasikan tiap proses berjalan selama 5 detik. Jika kode dijalankan outputnya adalah:
+```bash
+fahrudin@belajar-goroutine $ go run channel_select.go
+Timeout! tidak ada pesan masuk
+Timeout! tidak ada pesan masuk
+```
+
 ### d. Infinite loop dengan goroutine
+Infinite loop biasanya digunakan jika kita ingin menjalankan goroutine secara terus menerus di background untuk menghandle sesuatu.
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func main() {
+	ch := make(chan string)
+
+	// Goroutine dengan infinite loop
+	go func() {
+		for {
+			msg := <-ch
+			fmt.Println("Dapat:", msg)
+		}
+	}()
+
+	// Kirim data ke goroutine tiap 1 detik
+	for i := 1; i <= 5; i++ {
+		ch <- fmt.Sprintf("Pesan %d", i)
+		time.Sleep(1 * time.Second)
+	}
+
+	fmt.Println("Selesai")
+}
+
+```
+Jika kode dijalankan maka outputnya:
+```bash
+fahrudin@belajar-goroutine $ 
+Dapat: Pesan 1
+Dapat: Pesan 2
+Dapat: Pesan 3
+Dapat: Pesan 4
+Dapat: Pesan 5
+Selesai
+```
 
 ## Channel Range & Close
+
+```go
+package main
+
+import (
+	"fmt"
+	"time"
+)
+
+func worker(id int, jobs <-chan int) {
+	for job := range jobs {
+		fmt.Printf("Worker %d memproses job %d di waktu %s \n", id, job, time.Now().String())
+		time.Sleep(500 * time.Millisecond)
+	}
+	fmt.Printf("Worker %d selesai (channel ditutup)\n", id)
+}
+
+func main() {
+	jobs := make(chan int)
+
+	// jalankan 2 worker
+	go worker(1, jobs)
+	go worker(2, jobs)
+
+	// kirim 5 job
+	for j := 1; j <= 5; j++ {
+		jobs <- j
+	}
+	close(jobs) // sinyal tidak ada job lagi
+
+	time.Sleep(3 * time.Second)
+	fmt.Println("Program selesai")
+}
+
+```
+
+Jika kode dijalankan maka outputnya:
+```bash
+fahrudin@belajar-goroutine $ go run channel_range_close/channel_range_close.go 
+Worker 2 memproses job 1 di waktu 2025-10-01 22:23:54.987473 +0700 WIB m=+0.000078459 
+Worker 1 memproses job 2 di waktu 2025-10-01 22:23:54.987483 +0700 WIB m=+0.000088209 
+Worker 1 memproses job 4 di waktu 2025-10-01 22:23:55.488685 +0700 WIB m=+0.501305251 
+Worker 2 memproses job 3 di waktu 2025-10-01 22:23:55.488636 +0700 WIB m=+0.501256501 
+Worker 2 memproses job 5 di waktu 2025-10-01 22:23:55.989838 +0700 WIB m=+1.002472918 
+Worker 1 selesai (channel ditutup)
+Worker 2 selesai (channel ditutup)
+Program selesai
+```
+
+
 ## Channel Timeout
 ## WaitGroup
-## Penerapan Goroutine
-
-
-
-## Channel Select
-## Channel Range & Close
-## Channel Timeout
-## WaitGroup
-## Penerapan Goroutine
 
 
 ## Referensi Tulisan
